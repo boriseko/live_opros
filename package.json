@@ -1,0 +1,27 @@
+{
+  "name": "live-opros",
+  "version": "1.0.0",
+  "description": "Real-time interactive quiz system for NMTech employee training",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "seed": "node server/seed.js",
+    "build": "echo 'No build step — vanilla JS'"
+  },
+  "keywords": ["quiz", "realtime", "websocket", "training"],
+  "author": "NMTech AI Team",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "cookie": "^1.0.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

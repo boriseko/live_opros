@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Live Opros</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/participant.css">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#58ccbb">
+</head>
+<body>
+  <div class="participant-app" id="app">
+
+    <!-- Header -->
+    <header class="participant-header">
+      <span class="logo">LIVE OPROS</span>
+      <span class="status">
+        <span class="connection-dot" id="conn-dot"></span>
+        <span id="conn-text">Подключено</span>
+      </span>
+    </header>
+
+    <!-- 1. Join Screen -->
+    <main class="screen active" id="screen-join">
+      <div class="join-screen">
+        <h1 class="join-title">Live Opros</h1>
+        <p class="join-subtitle">Введите ваше имя для участия</p>
+        <form class="join-form" id="join-form">
+          <input
+            type="text"
+            id="name-input"
+            class="input input-lg"
+            placeholder="Ваше имя"
+            maxlength="50"
+            autocomplete="name"
+            required
+            autofocus
+          >
+          <button type="submit" id="join-btn" class="btn btn-accent btn-lg btn-block">
+            Присоединиться
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <!-- 2. Waiting Screen -->
+    <main class="screen" id="screen-waiting">
+      <div class="waiting-screen">
+        <div class="waiting-icon">
+          <div class="pulse-dot" style="width:24px;height:24px"></div>
+        </div>
+        <div class="waiting-text">Ожидание начала...</div>
+        <div class="waiting-count" id="waiting-count"></div>
+        <div class="participant-name-badge" id="name-badge"></div>
+      </div>
+    </main>
+
+    <!-- 3. Question Screen -->
+    <main class="screen" id="screen-question">
+      <div class="question-screen">
+        <div class="question-meta">
+          <span class="question-counter" id="q-counter"></span>
+          <div class="question-timer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--slate)">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="question-timer-text" id="q-timer">30</span>
+          </div>
+        </div>
+        <div class="question-text" id="q-text"></div>
+        <div id="q-options"></div>
+      </div>
+    </main>
+
+    <!-- 4. Answered Screen -->
+    <main class="screen" id="screen-answered">
+      <div class="answered-screen">
+        <div class="check-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h2>Ответ принят!</h2>
+        <p class="mt-sm text-slate">Ожидаем раскрытия правильного ответа...</p>
+      </div>
+    </main>
+
+    <!-- 5. Reveal Screen -->
+    <main class="screen" id="screen-reveal">
+      <div class="reveal-screen">
+        <div class="reveal-result" id="reveal-result">
+          <div class="reveal-result-icon" id="reveal-icon"></div>
+          <div class="reveal-result-text" id="reveal-text"></div>
+          <div class="reveal-correct-answer" id="reveal-answer"></div>
+        </div>
+        <div class="reveal-explanation" id="reveal-explanation">
+          <p id="reveal-explanation-text"></p>
+        </div>
+      </div>
+    </main>
+
+    <!-- 6. Block End Screen -->
+    <main class="screen" id="screen-block-end">
+      <div class="block-end-screen">
+        <div class="label mb-md" id="block-end-title"></div>
+        <div class="score-circle">
+          <span class="score-number" id="block-score">0</span>
+          <span class="score-label" id="block-score-label">из 5</span>
+        </div>
+        <h3>Ваш результат</h3>
+        <p class="mt-sm text-slate">Ожидание следующего блока...</p>
+      </div>
+    </main>
+
+    <!-- 7. Finished Screen -->
+    <main class="screen" id="screen-finished">
+      <div class="finished-screen">
+        <div class="finish-icon">&#127881;</div>
+        <h2>Спасибо за участие!</h2>
+        <p class="mt-sm text-slate">Тренинг завершён. Вы отлично поработали!</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/ws-client.js"></script>
+  <script src="/js/participant.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Live Opros</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-app" id="app">
+
+    <!-- Top Bar -->
+    <header class="admin-topbar">
+      <span class="logo">LIVE OPROS — ADMIN</span>
+      <div class="admin-topbar-right">
+        <span class="status flex items-center gap-sm">
+          <span class="connection-dot" id="conn-dot"></span>
+          <span id="conn-text" style="font-size:12px;color:var(--slate)"></span>
+        </span>
+        <button class="btn btn-ghost" id="btn-logout">Выйти</button>
+      </div>
+    </header>
+
+    <!-- Dashboard (quiz list + session management) -->
+    <div class="admin-dashboard" id="view-dashboard">
+      <div class="flex justify-between items-center mb-lg">
+        <div>
+          <h1>Управление опросами</h1>
+          <p class="text-slate">Выберите квиз для запуска или редактирования</p>
+        </div>
+        <button class="btn btn-accent" id="btn-create-quiz">+ Новый квиз</button>
+      </div>
+
+      <div class="quiz-grid" id="quiz-grid"></div>
+
+      <div class="sessions-section" id="sessions-section">
+        <h2>История сессий</h2>
+        <div id="sessions-list"></div>
+      </div>
+    </div>
+
+    <!-- Quiz Editor -->
+    <div class="admin-dashboard" id="view-editor" style="display:none">
+      <div class="flex justify-between items-center mb-lg">
+        <h1 id="editor-title">Редактирование квиза</h1>
+        <div class="flex gap-sm">
+          <button class="btn btn-ghost" id="btn-back-from-editor">Назад к списку</button>
+        </div>
+      </div>
+      <div id="editor-blocks"></div>
+      <button class="btn btn-outline mt-lg" id="btn-add-block">+ Добавить блок</button>
+    </div>
+
+    <!-- Results View -->
+    <div class="admin-dashboard" id="view-results" style="display:none">
+      <div class="flex justify-between items-center mb-lg">
+        <h1 id="results-title">Результаты</h1>
+        <button class="btn btn-ghost" id="btn-back-from-results">Назад к списку</button>
+      </div>
+      <div id="results-content"></div>
+    </div>
+
+    <!-- Live Control (during session) -->
+    <div class="admin-live" id="view-live">
+      <div class="live-main">
+        <!-- Controls -->
+        <div class="live-controls" id="live-controls">
+          <div class="live-controls-row">
+            <button class="btn btn-accent" id="btn-start-session" style="display:none">Начать сессию</button>
+            <button class="btn btn-accent" id="btn-show-question">Показать вопрос</button>
+            <button class="btn btn-outline" id="btn-lock-question" style="display:none">Стоп ответы</button>
+            <button class="btn btn-accent" id="btn-reveal">Раскрыть ответ</button>
+            <button class="btn btn-outline" id="btn-next">Далее</button>
+          </div>
+          <div class="live-controls-row">
+            <button class="btn btn-outline" id="btn-end-block" style="display:none">Завершить блок</button>
+            <button class="btn btn-danger" id="btn-end-session">Завершить сессию</button>
+            <button class="btn btn-ghost" id="btn-back-dashboard">Назад</button>
+          </div>
+        </div>
+
+        <!-- Session URL -->
+        <div class="session-url-box mb-lg" id="session-url-box" style="display:none">
+          <div class="label mb-sm">Ссылка для участников</div>
+          <div class="url-text" id="session-url"></div>
+          <button class="btn btn-outline" id="btn-copy-url">Копировать</button>
+        </div>
+
+        <!-- Current question display -->
+        <div class="live-question-card" id="live-question" style="display:none">
+          <div class="label mb-sm" id="live-q-label"></div>
+          <h3 id="live-q-text"></h3>
+          <div class="options-preview" id="live-q-options"></div>
+          <div class="mt-md" id="live-q-explanation" style="display:none">
+            <p class="text-slate" style="font-size:14px"><strong>Объяснение:</strong> <span id="live-q-exp-text"></span></p>
+          </div>
+        </div>
+
+        <!-- Block navigator -->
+        <div class="block-nav" id="block-nav">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="live-sidebar">
+        <div class="stat-card">
+          <div class="stat-label">Участники</div>
+          <div class="stat-value" id="stat-participants">0</div>
+          <div class="stat-detail" id="stat-participants-detail">онлайн</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Ответили</div>
+          <div class="stat-value" id="stat-answered">0</div>
+          <div class="stat-detail" id="stat-answered-detail"></div>
+        </div>
+
+        <div>
+          <div class="label mb-md">Распределение ответов</div>
+          <div class="live-distribution" id="live-distribution">
+            <p class="text-slate" style="font-size:13px">Ожидание вопроса...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/js/ws-client.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,465 @@
+/* ═══════════════════════════════════════════════════════════
+   Live Opros — Common Components
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Reset & Base ─────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--off-white);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── Typography ───────────────────────────────────────── */
+
+h1 { font-size: 36px; font-weight: 800; line-height: 1.15; color: var(--ink); }
+h2 { font-size: 28px; font-weight: 700; line-height: 1.2; color: var(--ink); }
+h3 { font-size: 22px; font-weight: 700; line-height: 1.3; color: var(--ink); }
+h4 { font-size: 18px; font-weight: 600; line-height: 1.4; color: var(--charcoal); }
+
+p { color: var(--slate); line-height: 1.65; }
+
+.mono { font-family: var(--mono); }
+.label {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-dark);
+}
+
+/* ── Buttons ──────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-sm);
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-accent {
+  background: var(--accent-gradient);
+  color: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+.btn-accent:hover:not(:disabled) {
+  box-shadow: var(--neon-glow-subtle);
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--accent-dark);
+  border: 1.5px solid var(--accent);
+}
+.btn-outline:hover:not(:disabled) {
+  background: rgba(88, 204, 187, 0.06);
+}
+
+.btn-danger {
+  background: var(--red);
+  color: var(--white);
+}
+.btn-danger:hover:not(:disabled) {
+  background: #e55a5a;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--slate);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--ghost);
+  color: var(--ink);
+}
+
+.btn-lg {
+  padding: 16px 32px;
+  font-size: 17px;
+  border-radius: var(--radius-lg);
+}
+
+.btn-xl {
+  padding: 20px 40px;
+  font-size: 20px;
+  border-radius: var(--radius-lg);
+}
+
+.btn-block {
+  display: flex;
+  width: 100%;
+}
+
+/* ── Cards ────────────────────────────────────────────── */
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--ghost);
+  border-radius: var(--radius-xl);
+  padding: var(--gap-xl);
+  transition: all 0.4s var(--ease);
+}
+.card:hover {
+  border-color: rgba(88, 204, 187, 0.15);
+  box-shadow: var(--shadow-md);
+}
+
+.card-elevated {
+  background: var(--white);
+  border: none;
+  border-radius: var(--radius-xl);
+  padding: var(--gap-xl);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Inputs ───────────────────────────────────────────── */
+
+.input, .textarea {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1.5px solid var(--ghost);
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--white);
+  transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  outline: none;
+}
+.input:focus, .textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(88, 204, 187, 0.15);
+}
+.input::placeholder, .textarea::placeholder {
+  color: var(--silver);
+}
+
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.input-lg {
+  padding: 18px 22px;
+  font-size: 18px;
+  border-radius: var(--radius-lg);
+}
+
+/* ── Badges ───────────────────────────────────────────── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.badge-accent {
+  background: rgba(88, 204, 187, 0.08);
+  border: 1px solid rgba(88, 204, 187, 0.15);
+  color: var(--accent-dark);
+}
+
+.badge-green {
+  background: var(--green-light);
+  color: var(--green);
+  border: 1px solid rgba(78, 203, 113, 0.15);
+}
+
+.badge-red {
+  background: var(--red-light);
+  color: var(--red);
+  border: 1px solid rgba(255, 107, 107, 0.15);
+}
+
+.badge-yellow {
+  background: var(--yellow-light);
+  color: #b8900a;
+  border: 1px solid rgba(240, 192, 64, 0.15);
+}
+
+/* ── Pulse Dot ────────────────────────────────────────── */
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(88, 204, 187, 0.6);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.pulse-dot-red {
+  background: var(--red);
+  box-shadow: 0 0 8px rgba(255, 107, 107, 0.6);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ── Connection Indicator ─────────────────────────────── */
+
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px rgba(78, 203, 113, 0.5);
+  transition: all 0.3s;
+}
+.connection-dot.offline {
+  background: var(--red);
+  box-shadow: 0 0 6px rgba(255, 107, 107, 0.5);
+}
+
+/* ── Timer Ring ───────────────────────────────────────── */
+
+.timer-ring {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-ring svg {
+  transform: rotate(-90deg);
+}
+
+.timer-ring circle {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.timer-ring .track {
+  stroke: var(--ghost);
+}
+
+.timer-ring .progress {
+  stroke: var(--accent);
+  transition: stroke-dashoffset 1s linear;
+}
+
+.timer-ring .progress.warning {
+  stroke: var(--yellow);
+}
+
+.timer-ring .progress.critical {
+  stroke: var(--red);
+}
+
+.timer-text {
+  position: absolute;
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ── Toast Notifications ──────────────────────────────── */
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 14px 20px;
+  background: var(--white);
+  border: 1px solid var(--ghost);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 14px;
+  color: var(--ink);
+  animation: slideIn 0.4s var(--ease);
+  max-width: 360px;
+}
+
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error { border-left: 3px solid var(--red); }
+.toast.info { border-left: 3px solid var(--accent); }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+/* ── Animations ───────────────────────────────────────── */
+
+.fade-in {
+  animation: fadeIn 0.5s var(--ease) forwards;
+}
+
+.slide-up {
+  animation: slideUp 0.6s var(--ease) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Histogram Bars ───────────────────────────────────── */
+
+.histogram {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  width: 100%;
+}
+
+.histogram-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+}
+
+.histogram-label {
+  flex: 0 0 200px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.histogram-bar-track {
+  flex: 1;
+  height: 40px;
+  background: var(--ghost);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.histogram-bar {
+  height: 100%;
+  background: var(--accent-gradient);
+  border-radius: var(--radius-sm);
+  transition: width 0.6s var(--ease-bounce);
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+}
+
+.histogram-bar.correct {
+  background: linear-gradient(135deg, #6dd88e, #4ecb71, #3ab85a);
+}
+
+.histogram-bar.wrong {
+  background: linear-gradient(135deg, #ff8a8a, #ff6b6b, #e55a5a);
+}
+
+.histogram-count {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.histogram-bar-track .histogram-count-outside {
+  position: absolute;
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--slate);
+}
+
+/* ── Utility ──────────────────────────────────────────── */
+
+.text-center { text-align: center; }
+.text-accent { color: var(--accent); }
+.text-red { color: var(--red); }
+.text-green { color: var(--green); }
+.text-slate { color: var(--slate); }
+.text-mono { font-family: var(--mono); }
+
+.mt-sm { margin-top: var(--gap-sm); }
+.mt-md { margin-top: var(--gap-md); }
+.mt-lg { margin-top: var(--gap-lg); }
+.mt-xl { margin-top: var(--gap-xl); }
+.mb-sm { margin-bottom: var(--gap-sm); }
+.mb-md { margin-bottom: var(--gap-md); }
+.mb-lg { margin-bottom: var(--gap-lg); }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: var(--gap-sm); }
+.gap-md { gap: var(--gap-md); }
+.gap-lg { gap: var(--gap-lg); }
+
+.hidden { display: none !important; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

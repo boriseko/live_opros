@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Display — Live Opros</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/display.css">
+</head>
+<body>
+  <div class="display-app" id="app">
+    <div class="display-glow-1"></div>
+    <div class="display-glow-2"></div>
+
+    <!-- 1. Lobby -->
+    <div class="d-screen d-lobby active" id="d-lobby">
+      <div class="d-logo">LIVE OPROS</div>
+      <h1 id="d-quiz-title">Интерактивный опрос</h1>
+      <p class="d-subtitle">Присоединяйтесь к опросу!</p>
+      <div class="d-join-info">
+        <div>
+          <div style="font-size:14px;color:#8fa0a7;margin-bottom:4px">Откройте в браузере:</div>
+          <div class="d-join-url" id="d-join-url"></div>
+        </div>
+      </div>
+      <div class="d-counter-big">
+        <span class="d-counter-num" id="d-lobby-count">0</span>
+        <span class="d-counter-label">участников</span>
+      </div>
+    </div>
+
+    <!-- 2. Question -->
+    <div class="d-screen d-question" id="d-question">
+      <div class="d-question-header">
+        <div>
+          <span class="d-q-block" id="d-q-block"></span>
+          <span class="d-q-counter" id="d-q-counter"></span>
+        </div>
+        <div class="d-timer">
+          <div class="d-timer-num" id="d-timer">30</div>
+        </div>
+      </div>
+      <div class="d-question-text" id="d-q-text"></div>
+      <div class="d-options" id="d-options"></div>
+      <div class="d-answered-counter">
+        Ответили: <span id="d-answered">0</span> / <span id="d-total">0</span>
+      </div>
+    </div>
+
+    <!-- 3. Reveal (histogram + explanation) -->
+    <div class="d-screen" id="d-reveal">
+      <div class="d-question-text" id="d-reveal-q-text" style="font-size:32px;margin-bottom:32px"></div>
+      <div class="d-histogram" id="d-histogram"></div>
+      <div class="d-explanation" id="d-explanation" style="display:none">
+        <div class="d-exp-label">Объяснение</div>
+        <p id="d-exp-text"></p>
+      </div>
+    </div>
+
+    <!-- 4. Block End -->
+    <div class="d-screen d-block-end" id="d-block-end">
+      <div class="d-score-ring">
+        <div class="d-score-num" id="d-block-score">3.5</div>
+        <div class="d-score-label" id="d-block-score-label">средний балл</div>
+      </div>
+      <h2 id="d-block-end-title">Блок завершён</h2>
+      <p id="d-block-end-detail"></p>
+    </div>
+
+    <!-- 5. Finished -->
+    <div class="d-screen d-finished" id="d-finished">
+      <div class="d-finish-emoji">&#127881;</div>
+      <h1>Спасибо!</h1>
+      <p>Тренинг завершён</p>
+    </div>
+  </div>
+
+  <script src="/js/ws-client.js"></script>
+  <script src="/js/display.js"></script>
+</body>
+</html>
