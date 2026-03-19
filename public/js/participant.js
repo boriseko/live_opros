@@ -155,6 +155,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ws.on('session:ended', () => {
       showScreen('finished');
       clearTimer();
+      // Clean up old session data so next session starts fresh
+      localStorage.removeItem('lo_sessionId');
+      localStorage.removeItem(`lo_pid_${sessionId}`);
+      localStorage.removeItem(`lo_name_${sessionId}`);
       if (ws) ws.close();
     });
 
@@ -397,6 +401,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Auto-connect if saved ────────────────────────────
+  // Server will send session:ended and close WS if session is finished,
+  // which triggers localStorage cleanup above.
 
   if (savedPId && savedName) {
     participantName = savedName;
