@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('d-q-counter').textContent =
       data.questionNumber && data.totalQuestions
-        ? `  ${data.questionNumber} / ${data.totalQuestions}`
+        ? `Вопрос ${data.questionNumber} из ${data.totalQuestions}`
         : '';
     document.getElementById('d-q-block').textContent = data.blockTitle || '';
     document.getElementById('d-q-text').textContent = data.text;

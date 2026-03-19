@@ -345,24 +345,27 @@ document.addEventListener('DOMContentLoaded', () => {
       result.classList.add('correct');
       icon.textContent = '\u2705';
       text.textContent = 'Правильно!';
+      // Don't show the correct answer — they already know it
+      answer.classList.add('hidden');
     } else if (data.isCorrect === false) {
       result.classList.add('incorrect');
       icon.textContent = '\u274C';
       text.textContent = 'Неправильно';
+      // Show correct answer so they learn
+      if (data.correctAnswer) {
+        const correct = Array.isArray(data.correctAnswer)
+          ? data.correctAnswer.join(', ')
+          : data.correctAnswer;
+        answer.textContent = `Правильный ответ: ${correct}`;
+        answer.classList.remove('hidden');
+      } else {
+        answer.classList.add('hidden');
+      }
     } else {
       // text/scale — no correct answer
       result.classList.add('neutral');
       icon.textContent = '\u2705';
       text.textContent = 'Ответ принят';
-    }
-
-    if (data.correctAnswer) {
-      const correct = Array.isArray(data.correctAnswer)
-        ? data.correctAnswer.join(', ')
-        : data.correctAnswer;
-      answer.textContent = `Правильный ответ: ${correct}`;
-      answer.classList.remove('hidden');
-    } else {
       answer.classList.add('hidden');
     }
 
