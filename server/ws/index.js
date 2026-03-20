@@ -133,7 +133,10 @@ function setupWebSocket(server) {
       });
     } else if (pathname === '/ws/presentation') {
       wss.handleUpgrade(req, socket, head, (ws) => {
-        handlePresentationConnection(ws, query, { send });
+        handlePresentationConnection(ws, query, {
+          activeSessions, getOrCreateSessionState,
+          send, broadcastToParticipants, broadcastToDisplays, sendParticipantCount,
+        });
       });
     } else {
       socket.destroy();

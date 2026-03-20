@@ -94,9 +94,11 @@
     <!-- Live Control (during session) -->
     <div class="admin-live" id="view-live">
       <div class="live-main">
-        <!-- Presentation iframe (hidden when no presentation) -->
-        <div class="live-pres-frame" id="live-pres-frame" style="display:none">
-          <iframe id="admin-pres-iframe" src="about:blank"></iframe>
+        <!-- Open Presentation button (shown when session has presentation) -->
+        <div id="live-pres-btn-wrap" style="display:none">
+          <button class="btn btn-accent btn-lg btn-block" id="btn-open-presentation" style="margin-bottom:16px;font-size:16px;">
+            Открыть презентацию (новая вкладка)
+          </button>
         </div>
 
         <!-- Controls -->

@@ -238,57 +238,16 @@ document.addEventListener('DOMContentLoaded', () => {
       toast('Ссылка скопирована!', 'success');
     };
 
-    // Show presentation iframe if session has presentation
-    const presFrame = document.getElementById('live-pres-frame');
-    const presIframe = document.getElementById('admin-pres-iframe');
+    // Show "Open Presentation" button if session has presentation
+    const presBtnWrap = document.getElementById('live-pres-btn-wrap');
     if (hasPresentation) {
-      presFrame.style.display = '';
-      presIframe.src = `/api/presentations/${session.presentation_id}/file`;
-      // Start scroll sync after iframe loads
-      presIframe.onload = () => {
-        let lastRatio = -1;
-        let syncInterval = null;
-        let scrolling = false;
-
-        function captureScroll() {
-          try {
-            const doc = presIframe.contentDocument.documentElement;
-            const max = doc.scrollHeight - presIframe.contentWindow.innerHeight;
-            if (max <= 0) return;
-            const ratio = Math.round(presIframe.contentWindow.scrollY / max * 10000) / 10000;
-            if (ratio !== lastRatio && ws) {
-              lastRatio = ratio;
-              ws.send('slide:sync', { ratio });
-            }
-          } catch (e) { /* iframe not ready */ }
-        }
-
-        presIframe.contentWindow.addEventListener('scroll', () => {
-          if (!scrolling) {
-            scrolling = true;
-            captureScroll();
-          }
-          clearTimeout(syncInterval);
-          syncInterval = setTimeout(() => {
-            captureScroll();
-            scrolling = false;
-          }, 100);
-        }, { passive: true });
-
-        // Throttled updates during active scroll
-        let throttle = null;
-        presIframe.contentWindow.addEventListener('scroll', () => {
-          if (!throttle) {
-            throttle = setInterval(() => {
-              if (!scrolling) { clearInterval(throttle); throttle = null; return; }
-              captureScroll();
-            }, 100);
-          }
-        }, { passive: true });
+      presBtnWrap.style.display = '';
+      const presUrl = `/api/presentations/${session.presentation_id}/file?presenter=true&sessionId=${sessionId}`;
+      document.getElementById('btn-open-presentation').onclick = () => {
+        window.open(presUrl, '_blank');
       };
     } else {
-      presFrame.style.display = 'none';
-      presIframe.src = 'about:blank';
+      presBtnWrap.style.display = 'none';
     }
 
     // Build block navigator

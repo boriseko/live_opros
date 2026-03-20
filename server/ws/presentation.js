@@ -1,52 +1,48 @@
 /**
  * WebSocket handler for presentation slide synchronization.
- * Presenter scrolls → all viewers auto-scroll to the same position.
- * Uses scroll RATIO (0.0–1.0) for viewport-independent sync.
- * No database, no sessions — pure in-memory state.
+ * Session-aware: presenter connects with sessionId, scroll events
+ * are broadcast to all participants in that session.
+ * Stores current ratio per session for late joiners.
  */
 
-let presenterWs = null;
-let viewers = new Set();
-let currentRatio = 0;
-
-function broadcastToViewers(type, payload) {
-  const msg = JSON.stringify({ type, payload });
-  for (const ws of viewers) {
-    if (ws.readyState === 1) ws.send(msg);
-  }
-}
-
-function sendViewerCount() {
-  let online = 0;
-  for (const ws of viewers) {
-    if (ws.readyState === 1) online++;
-  }
-  const payload = { count: online };
-  broadcastToViewers('viewer:count', payload);
-  if (presenterWs && presenterWs.readyState === 1) {
-    presenterWs.send(JSON.stringify({ type: 'viewer:count', payload }));
-  }
-}
-
 function handlePresentationConnection(ws, query, ctx) {
-  const { send } = ctx;
-  const role = query.role || 'viewer';
+  const { activeSessions, getOrCreateSessionState, send,
+          broadcastToParticipants, broadcastToDisplays, sendParticipantCount } = ctx;
+
+  const role = query.role || 'presenter';
+  const sessionId = Number(query.sessionId);
 
   ws.isAlive = true;
   ws.on('pong', () => { ws.isAlive = true; });
 
+  if (!sessionId) {
+    send(ws, 'error', { message: 'sessionId is required' });
+    ws.close();
+    return;
+  }
+
+  const state = getOrCreateSessionState(sessionId);
+
   if (role === 'presenter') {
-    presenterWs = ws;
+    state.presenterWs = ws;
+
+    // Send current viewer count
+    let online = 0;
+    for (const [, p] of state.participants) {
+      if (p.ws && p.ws.readyState === 1) online++;
+    }
+    send(ws, 'viewer:count', { count: online });
 
     ws.on('message', (raw) => {
       try {
         const { type, payload } = JSON.parse(raw);
 
         if (type === 'slide:sync') {
-          currentRatio = payload.ratio;
-          broadcastToViewers('slide:sync', { ratio: currentRatio });
-        } else if (type === 'slide:quiztime') {
-          broadcastToViewers('slide:quiztime', payload || {});
+          // Store ratio for late joiners
+          state.slideRatio = payload.ratio;
+          // Broadcast to all participants and displays in this session
+          broadcastToParticipants(sessionId, 'slide:sync', { ratio: payload.ratio });
+          broadcastToDisplays(sessionId, 'slide:sync', { ratio: payload.ratio });
         }
       } catch (e) {
         // Ignore malformed messages
@@ -54,24 +50,12 @@ function handlePresentationConnection(ws, query, ctx) {
     });
 
     ws.on('close', () => {
-      if (presenterWs === ws) presenterWs = null;
+      if (state.presenterWs === ws) state.presenterWs = null;
     });
-
-    sendViewerCount();
 
   } else {
-    viewers.add(ws);
-
-    // Send current position immediately so viewer catches up
-    send(ws, 'slide:sync', { ratio: currentRatio });
-    sendViewerCount();
-
-    ws.on('close', () => {
-      viewers.delete(ws);
-      sendViewerCount();
-    });
-
-    ws.on('message', () => {});
+    // No viewer role needed — participants connect via /ws/participant
+    ws.close();
   }
 }
 

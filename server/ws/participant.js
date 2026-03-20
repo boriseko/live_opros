@@ -210,6 +210,13 @@ function sendCurrentState(ws, sessionId, participantId) {
   const session = stmts.getSessionById.get(sessionId);
   if (!session) return;
 
+  // Send current slide position for late joiners
+  const { activeSessions } = require('./index');
+  const sessionState = activeSessions.get(sessionId);
+  if (sessionState && typeof sessionState.slideRatio === 'number') {
+    send(ws, 'slide:sync', { ratio: sessionState.slideRatio });
+  }
+
   if (session.status === 'waiting') {
     send(ws, 'session:waiting', { quizTitle: session.quiz_title });
     return;
