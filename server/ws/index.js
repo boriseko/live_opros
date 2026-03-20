@@ -4,6 +4,7 @@ const config = require('../config');
 const { handleAdminConnection } = require('./admin');
 const { handleParticipantConnection } = require('./participant');
 const { handleDisplayConnection } = require('./display');
+const { handlePresentationConnection } = require('./presentation');
 
 // ── Shared State ──────────────────────────────────────────
 
@@ -129,6 +130,10 @@ function setupWebSocket(server) {
           activeSessions, getOrCreateSessionState,
           send, sendParticipantCount,
         });
+      });
+    } else if (pathname === '/ws/presentation') {
+      wss.handleUpgrade(req, socket, head, (ws) => {
+        handlePresentationConnection(ws, query, { send });
       });
     } else {
       socket.destroy();
