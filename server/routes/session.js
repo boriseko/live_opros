@@ -4,7 +4,29 @@ const { stmts, getFullQuiz, getSessionResults } = require('../db');
 
 const router = Router();
 
-// All session routes require auth
+// ── Public routes (no auth) ──────────────────────────────
+
+// GET /api/sessions/active — list active sessions for participants
+router.get('/active', (req, res) => {
+  const sessions = stmts.getActiveSessions.all();
+  res.json(sessions);
+});
+
+// GET /api/sessions/:id/public — session info for training page
+router.get('/:id/public', (req, res) => {
+  const session = stmts.getSessionById.get(Number(req.params.id));
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+  res.json({
+    id: session.id,
+    status: session.status,
+    quiz_title: session.quiz_title,
+    presentation_id: session.presentation_id,
+    presentation_title: session.presentation_title,
+    presentation_filename: session.presentation_filename,
+  });
+});
+
+// ── Auth-protected routes ────────────────────────────────
 router.use(requireAuth);
 
 // POST /api/sessions — create a new session for a quiz
@@ -19,7 +41,15 @@ router.post('/', (req, res) => {
     return res.status(404).json({ error: 'Quiz not found' });
   }
 
-  const result = stmts.insertSession.run(Number(quizId));
+  const { presentationId } = req.body;
+  let result;
+  if (presentationId) {
+    const pres = stmts.getPresentationById ? stmts.getPresentationById.get(Number(presentationId)) : null;
+    if (!pres) return res.status(404).json({ error: 'Presentation not found' });
+    result = stmts.insertSessionWithPresentation.run(Number(quizId), Number(presentationId));
+  } else {
+    result = stmts.insertSession.run(Number(quizId));
+  }
   const session = stmts.getSessionById.get(result.lastInsertRowid);
   res.status(201).json(session);
 });

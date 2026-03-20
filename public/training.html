@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Тренинг — Live Training</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/training.css">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#58ccbb">
+</head>
+<body>
+  <div class="training-app" id="app">
+
+    <!-- Presentation iframe (full screen, behind everything) -->
+    <iframe id="pres-iframe" src="about:blank"></iframe>
+
+    <!-- Connection badge (always visible) -->
+    <div class="training-badge" id="conn-badge">
+      <span class="connection-dot" id="conn-dot"></span>
+      <span id="conn-text">Подключение...</span>
+    </div>
+
+    <!-- 1. Join Screen -->
+    <div class="training-overlay active" id="screen-join">
+      <div class="join-card">
+        <div class="join-logo">
+          <div class="join-logo-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+        </div>
+        <h2 class="join-title" id="join-title">Присоединиться</h2>
+        <p class="join-subtitle" id="join-subtitle"></p>
+        <form class="join-form" id="join-form">
+          <input type="text" id="name-input" class="input input-lg" placeholder="Ваше имя" maxlength="50" autocomplete="name" required autofocus>
+          <button type="submit" id="join-btn" class="btn btn-accent btn-lg btn-block">Войти в тренинг</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2. Quiz Overlay (question) -->
+    <div class="training-overlay" id="screen-question">
+      <div class="quiz-card">
+        <div class="quiz-meta">
+          <span class="quiz-counter" id="q-counter"></span>
+          <div class="quiz-timer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--slate)">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="quiz-timer-text" id="q-timer">30</span>
+          </div>
+        </div>
+        <div class="quiz-text" id="q-text"></div>
+        <div class="quiz-options" id="q-options"></div>
+      </div>
+    </div>
+
+    <!-- 3. Answered confirmation -->
+    <div class="training-overlay" id="screen-answered">
+      <div class="quiz-card quiz-card-sm">
+        <div class="answered-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div class="answered-text" id="answered-text">Ответ принят!</div>
+      </div>
+    </div>
+
+    <!-- 4. Reveal result -->
+    <div class="training-overlay" id="screen-reveal">
+      <div class="quiz-card">
+        <div class="reveal-result" id="reveal-result"></div>
+      </div>
+    </div>
+
+    <!-- 5. Block end (score) -->
+    <div class="training-overlay" id="screen-block-end">
+      <div class="quiz-card quiz-card-sm">
+        <div class="block-end-content" id="block-end-content"></div>
+      </div>
+    </div>
+
+    <!-- 6. Session finished -->
+    <div class="training-overlay" id="screen-finished">
+      <div class="quiz-card quiz-card-sm">
+        <div class="finished-content">
+          <div style="font-size:56px;margin-bottom:16px;">&#127881;</div>
+          <h2 style="font-size:24px;font-weight:800;margin-bottom:8px;">Спасибо за участие!</h2>
+          <p style="color:var(--slate);">Тренинг завершён</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/js/ws-client.js"></script>
+  <script src="/js/training.js"></script>
+</body>
+</html>

@@ -70,12 +70,27 @@ db.exec(`
     UNIQUE(session_id, participant_id, question_id)
   );
 
+  CREATE TABLE IF NOT EXISTS presentations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    file_size INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
   CREATE INDEX IF NOT EXISTS idx_blocks_quiz ON blocks(quiz_id, sort_order);
   CREATE INDEX IF NOT EXISTS idx_questions_block ON questions(block_id, sort_order);
   CREATE INDEX IF NOT EXISTS idx_participants_session ON participants(session_id);
   CREATE INDEX IF NOT EXISTS idx_responses_session ON responses(session_id, question_id);
   CREATE INDEX IF NOT EXISTS idx_responses_participant ON responses(participant_id);
 `);
+
+// Migration: add presentation_id to sessions (idempotent)
+try {
+  db.exec('ALTER TABLE sessions ADD COLUMN presentation_id INTEGER DEFAULT NULL REFERENCES presentations(id)');
+} catch (e) {
+  // Column already exists — ignore
+}
 
 // ── Prepared Statements ───────────────────────────────────
 
@@ -105,10 +120,38 @@ const stmts = {
   deleteQuestion: db.prepare('DELETE FROM questions WHERE id = ?'),
   getMaxQuestionOrder: db.prepare('SELECT COALESCE(MAX(sort_order), -1) as max_order FROM questions WHERE block_id = ?'),
 
+  // Presentations
+  getPresentations: db.prepare('SELECT * FROM presentations ORDER BY created_at DESC'),
+  getPresentationById: db.prepare('SELECT * FROM presentations WHERE id = ?'),
+  insertPresentation: db.prepare('INSERT INTO presentations (title, filename, file_size) VALUES (?, ?, ?)'),
+  deletePresentation: db.prepare('DELETE FROM presentations WHERE id = ?'),
+
   // Sessions
-  getSessions: db.prepare('SELECT s.*, q.title as quiz_title FROM sessions s JOIN quizzes q ON s.quiz_id = q.id ORDER BY s.created_at DESC'),
-  getSessionById: db.prepare('SELECT s.*, q.title as quiz_title FROM sessions s JOIN quizzes q ON s.quiz_id = q.id WHERE s.id = ?'),
+  getSessions: db.prepare(`
+    SELECT s.*, q.title as quiz_title, p.title as presentation_title
+    FROM sessions s
+    JOIN quizzes q ON s.quiz_id = q.id
+    LEFT JOIN presentations p ON s.presentation_id = p.id
+    ORDER BY s.created_at DESC
+  `),
+  getSessionById: db.prepare(`
+    SELECT s.*, q.title as quiz_title, p.title as presentation_title, p.filename as presentation_filename
+    FROM sessions s
+    JOIN quizzes q ON s.quiz_id = q.id
+    LEFT JOIN presentations p ON s.presentation_id = p.id
+    WHERE s.id = ?
+  `),
+  getActiveSessions: db.prepare(`
+    SELECT s.id, s.status, s.presentation_id, q.title as quiz_title, p.title as presentation_title,
+           (SELECT COUNT(*) FROM participants WHERE session_id = s.id) as participant_count
+    FROM sessions s
+    JOIN quizzes q ON s.quiz_id = q.id
+    LEFT JOIN presentations p ON s.presentation_id = p.id
+    WHERE s.status IN ('waiting', 'active')
+    ORDER BY s.created_at DESC
+  `),
   insertSession: db.prepare('INSERT INTO sessions (quiz_id) VALUES (?)'),
+  insertSessionWithPresentation: db.prepare('INSERT INTO sessions (quiz_id, presentation_id) VALUES (?, ?)'),
   updateSessionStatus: db.prepare('UPDATE sessions SET status = ?, started_at = COALESCE(started_at, datetime(\'now\')) WHERE id = ?'),
   updateSessionQuestion: db.prepare('UPDATE sessions SET current_block_id = ?, current_question_id = ?, question_state = ? WHERE id = ?'),
   finishSession: db.prepare('UPDATE sessions SET status = \'finished\', finished_at = datetime(\'now\'), question_state = \'idle\' WHERE id = ?'),

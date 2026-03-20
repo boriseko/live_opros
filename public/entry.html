@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Live Training — NMTech</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/entry.css">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#58ccbb">
+</head>
+<body>
+  <div class="entry-app">
+
+    <!-- Role Selection -->
+    <div class="entry-screen active" id="screen-role">
+      <div class="entry-logo">
+        <div class="entry-logo-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="entry-title">Live Training</h1>
+      <p class="entry-subtitle">Платформа интерактивного обучения NMTech</p>
+
+      <div class="role-cards">
+        <a href="/login.html" class="role-card role-presenter">
+          <div class="role-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <div class="role-label">Ведущий</div>
+          <div class="role-desc">Управление тренингом</div>
+        </a>
+
+        <button class="role-card role-participant" id="btn-participant">
+          <div class="role-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="role-label">Участник</div>
+          <div class="role-desc">Подключиться к тренингу</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Session Selection (for participants) -->
+    <div class="entry-screen" id="screen-sessions">
+      <button class="back-btn" id="btn-back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Назад
+      </button>
+      <h2 class="sessions-title">Активные тренинги</h2>
+      <div class="sessions-list" id="sessions-list">
+        <div class="sessions-loading">Загрузка...</div>
+      </div>
+      <div class="sessions-empty" id="sessions-empty" style="display:none">
+        <div class="empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--silver)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <p>Нет активных тренингов</p>
+        <p class="empty-hint">Ведущий ещё не запустил сессию</p>
+      </div>
+    </div>
+
+  </div>
+  <script src="/js/entry.js"></script>
+</body>
+</html>

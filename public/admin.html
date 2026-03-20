@@ -35,9 +35,38 @@
 
       <div class="quiz-grid" id="quiz-grid"></div>
 
+      <!-- Presentations -->
+      <div class="presentations-section" id="presentations-section">
+        <div class="flex justify-between items-center mb-md">
+          <h2>Презентации</h2>
+          <label class="btn btn-outline" style="cursor:pointer">
+            Загрузить HTML
+            <input type="file" accept=".html,.htm" id="pres-file-input" style="display:none">
+          </label>
+        </div>
+        <div id="presentations-list"></div>
+      </div>
+
       <div class="sessions-section" id="sessions-section">
         <h2>История сессий</h2>
         <div id="sessions-list"></div>
+      </div>
+    </div>
+
+    <!-- Session Create Modal -->
+    <div class="modal-overlay" id="modal-create-session" style="display:none">
+      <div class="modal-card">
+        <h3 style="font-size:20px;font-weight:700;margin-bottom:16px;">Запустить сессию</h3>
+        <div class="form-group mb-md">
+          <label class="label mb-sm" style="display:block">Презентация (опционально)</label>
+          <select id="pres-select" class="input" style="width:100%">
+            <option value="">Без презентации (только опрос)</option>
+          </select>
+        </div>
+        <div class="flex gap-sm" style="justify-content:flex-end">
+          <button class="btn btn-ghost" id="btn-cancel-session">Отмена</button>
+          <button class="btn btn-accent" id="btn-confirm-session">Запустить</button>
+        </div>
       </div>
     </div>
 
@@ -65,6 +94,11 @@
     <!-- Live Control (during session) -->
     <div class="admin-live" id="view-live">
       <div class="live-main">
+        <!-- Presentation iframe (hidden when no presentation) -->
+        <div class="live-pres-frame" id="live-pres-frame" style="display:none">
+          <iframe id="admin-pres-iframe" src="about:blank"></iframe>
+        </div>
+
         <!-- Controls -->
         <div class="live-controls" id="live-controls">
           <div class="live-controls-row">

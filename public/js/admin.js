@@ -61,6 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
       grid.appendChild(card);
     });
 
+    // Load presentations
+    await loadPresentations();
+
     // Load sessions
     const sessions = await api('/api/sessions');
     const list = document.getElementById('sessions-list');
@@ -79,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
       row.innerHTML = `
         <div class="session-info">
           <span class="badge ${statusBadge}">${statusText}</span>
-          <span>${esc(s.quiz_title)}</span>
+          <span>${esc(s.quiz_title)}${s.presentation_title ? ' + ' + esc(s.presentation_title) : ''}</span>
           <span class="text-slate" style="font-size:13px">${s.participantCount} уч.</span>
         </div>
         <div class="flex gap-sm">
@@ -99,16 +102,97 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ── Create Session ───────────────────────────────────
+  // ── Presentations Management ─────────────────────────
+
+  async function loadPresentations() {
+    const presentations = await api('/api/presentations');
+    const list = document.getElementById('presentations-list');
+    list.innerHTML = '';
+
+    if (!presentations || presentations.length === 0) {
+      list.innerHTML = '<p class="text-slate" style="font-size:14px">Нет загруженных презентаций</p>';
+      return presentations || [];
+    }
+
+    presentations.forEach((p) => {
+      const row = document.createElement('div');
+      row.className = 'pres-row';
+      const sizeKb = Math.round(p.file_size / 1024);
+      row.innerHTML = `
+        <div class="pres-info">
+          <div class="pres-title">${esc(p.title)}</div>
+          <div class="pres-meta">${sizeKb} KB</div>
+        </div>
+        <button class="btn btn-ghost" style="color:var(--red);font-size:13px">Удалить</button>
+      `;
+      row.querySelector('button').addEventListener('click', async () => {
+        if (!confirm(`Удалить презентацию «${p.title}»?`)) return;
+        await api(`/api/presentations/${p.id}`, { method: 'DELETE' });
+        toast('Удалено', 'info');
+        loadPresentations();
+      });
+      list.appendChild(row);
+    });
+
+    return presentations;
+  }
+
+  // File upload
+  document.getElementById('pres-file-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const title = file.name.replace(/\.html?$/i, '') || 'Презентация';
+    const content = await file.text();
+
+    toast('Загрузка...', 'info');
+    await api('/api/presentations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: { title, content },
+    });
+    toast('Презентация загружена!', 'success');
+    e.target.value = '';
+    loadPresentations();
+  });
+
+  // ── Create Session (with modal) ────────────────────────
+
+  let pendingQuizId = null;
 
   async function createSession(quizId) {
-    const session = await api('/api/sessions', {
-      method: 'POST',
-      body: { quizId },
-    });
+    pendingQuizId = quizId;
+
+    // Load presentations for selector
+    const presentations = await api('/api/presentations');
+    const select = document.getElementById('pres-select');
+    select.innerHTML = '<option value="">Без презентации (только опрос)</option>';
+    if (presentations && presentations.length > 0) {
+      presentations.forEach((p) => {
+        select.innerHTML += `<option value="${p.id}">${esc(p.title)}</option>`;
+      });
+    }
+
+    document.getElementById('modal-create-session').style.display = '';
+  }
+
+  document.getElementById('btn-cancel-session').addEventListener('click', () => {
+    document.getElementById('modal-create-session').style.display = 'none';
+    pendingQuizId = null;
+  });
+
+  document.getElementById('btn-confirm-session').addEventListener('click', async () => {
+    if (!pendingQuizId) return;
+    const presId = document.getElementById('pres-select').value;
+    const body = { quizId: pendingQuizId };
+    if (presId) body.presentationId = Number(presId);
+
+    const session = await api('/api/sessions', { method: 'POST', body });
+    document.getElementById('modal-create-session').style.display = 'none';
     toast('Сессия создана!', 'success');
     joinSession(session.id);
-  }
+    pendingQuizId = null;
+  });
 
   // ── Join Session (live control) ──────────────────────
 
@@ -140,16 +224,72 @@ document.addEventListener('DOMContentLoaded', () => {
     viewDashboard.style.display = 'none';
     viewLive.classList.add('active');
 
-    // Show session URL
+    // Show session URL (training or quiz depending on presentation)
     const urlBox = document.getElementById('session-url-box');
     urlBox.style.display = '';
-    const participantUrl = `${location.origin}/?s=${sessionId}`;
+    const hasPresentation = session.presentation_id;
+    const participantUrl = hasPresentation
+      ? `${location.origin}/training.html?s=${sessionId}`
+      : `${location.origin}/?s=${sessionId}`;
     document.getElementById('session-url').textContent = participantUrl;
 
-    document.getElementById('btn-copy-url').addEventListener('click', () => {
+    document.getElementById('btn-copy-url').onclick = () => {
       navigator.clipboard.writeText(participantUrl);
       toast('Ссылка скопирована!', 'success');
-    });
+    };
+
+    // Show presentation iframe if session has presentation
+    const presFrame = document.getElementById('live-pres-frame');
+    const presIframe = document.getElementById('admin-pres-iframe');
+    if (hasPresentation) {
+      presFrame.style.display = '';
+      presIframe.src = `/api/presentations/${session.presentation_id}/file`;
+      // Start scroll sync after iframe loads
+      presIframe.onload = () => {
+        let lastRatio = -1;
+        let syncInterval = null;
+        let scrolling = false;
+
+        function captureScroll() {
+          try {
+            const doc = presIframe.contentDocument.documentElement;
+            const max = doc.scrollHeight - presIframe.contentWindow.innerHeight;
+            if (max <= 0) return;
+            const ratio = Math.round(presIframe.contentWindow.scrollY / max * 10000) / 10000;
+            if (ratio !== lastRatio && ws) {
+              lastRatio = ratio;
+              ws.send('slide:sync', { ratio });
+            }
+          } catch (e) { /* iframe not ready */ }
+        }
+
+        presIframe.contentWindow.addEventListener('scroll', () => {
+          if (!scrolling) {
+            scrolling = true;
+            captureScroll();
+          }
+          clearTimeout(syncInterval);
+          syncInterval = setTimeout(() => {
+            captureScroll();
+            scrolling = false;
+          }, 100);
+        }, { passive: true });
+
+        // Throttled updates during active scroll
+        let throttle = null;
+        presIframe.contentWindow.addEventListener('scroll', () => {
+          if (!throttle) {
+            throttle = setInterval(() => {
+              if (!scrolling) { clearInterval(throttle); throttle = null; return; }
+              captureScroll();
+            }, 100);
+          }
+        }, { passive: true });
+      };
+    } else {
+      presFrame.style.display = 'none';
+      presIframe.src = 'about:blank';
+    }
 
     // Build block navigator
     buildBlockNav();

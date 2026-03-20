@@ -49,14 +49,26 @@ if (BASE_PATH) {
   });
 }
 
+// Entry page: serve entry.html at / (unless ?s= param for backward compat)
+app.get('/', (req, res, next) => {
+  if (req.query.s || req.query.session) return next(); // fall through to static index.html
+  const entryPath = path.join(__dirname, '..', 'public', 'entry.html');
+  const fs = require('fs');
+  if (fs.existsSync(entryPath)) return res.sendFile(entryPath);
+  next(); // fallback to static if entry.html doesn't exist yet
+});
+
 // Static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // ── API Routes ────────────────────────────────────────────
 
+const { requireAuth } = require('./middleware/auth');
+
 app.use('/api/auth', rateLimitLogin, require('./routes/auth'));
 app.use('/api/quizzes', require('./routes/quiz'));
 app.use('/api/sessions', require('./routes/session'));
+app.use('/api/presentations', express.json({ limit: '5mb' }), require('./routes/presentation'));
 
 // ── Admin page guard ──────────────────────────────────────
 

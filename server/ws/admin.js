@@ -272,6 +272,13 @@ function handleAdminConnection(ws, query, ctx) {
         break;
       }
 
+      case 'slide:sync': {
+        if (!sessionId) return;
+        broadcastToParticipants(sessionId, 'slide:sync', { ratio: payload.ratio });
+        broadcastToDisplays(sessionId, 'slide:sync', { ratio: payload.ratio });
+        break;
+      }
+
       default:
         send(ws, 'error', { message: `Unknown message type: ${type}` });
     }

@@ -1,0 +1,240 @@
+.entry-app {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--off-white);
+  padding: 24px;
+}
+
+.entry-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 520px;
+  width: 100%;
+  animation: fadeIn 0.4s var(--ease);
+}
+
+.entry-screen.active {
+  display: flex;
+}
+
+/* Logo */
+.entry-logo {
+  margin-bottom: 24px;
+}
+
+.entry-logo-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md), var(--neon-glow);
+}
+
+.entry-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 8px;
+  line-height: 1.1;
+}
+
+.entry-subtitle {
+  font-size: 16px;
+  color: var(--slate);
+  margin-bottom: 40px;
+}
+
+/* Role Cards */
+.role-cards {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.role-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 24px;
+  background: var(--white);
+  border: 2px solid var(--ghost);
+  border-radius: var(--radius-xl, 16px);
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
+}
+
+.role-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.role-card:active {
+  transform: translateY(0);
+}
+
+.role-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--off-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  transition: all 0.25s var(--ease);
+}
+
+.role-card:hover .role-icon {
+  background: rgba(88, 204, 187, 0.1);
+}
+
+.role-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.role-desc {
+  font-size: 14px;
+  color: var(--slate);
+}
+
+/* Sessions Screen */
+.back-btn {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--slate);
+  font: 500 14px/1 var(--font);
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 16px;
+  transition: color 0.2s;
+}
+
+.back-btn:hover {
+  color: var(--ink);
+}
+
+.sessions-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 20px;
+  align-self: flex-start;
+}
+
+.sessions-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sessions-loading {
+  color: var(--slate);
+  padding: 24px;
+  font-size: 15px;
+}
+
+.session-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: var(--white);
+  border: 2px solid var(--ghost);
+  border-radius: var(--radius-lg, 12px);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  text-decoration: none;
+  color: inherit;
+}
+
+.session-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.session-card-info {
+  text-align: left;
+}
+
+.session-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.session-card-meta {
+  font: 400 13px/1.4 var(--mono);
+  color: var(--slate);
+  display: flex;
+  gap: 12px;
+}
+
+.session-card-arrow {
+  color: var(--silver);
+  flex-shrink: 0;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.session-card:hover .session-card-arrow {
+  color: var(--accent);
+  transform: translateX(4px);
+}
+
+/* Empty state */
+.sessions-empty {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-icon {
+  margin-bottom: 16px;
+}
+
+.sessions-empty p {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: 4px;
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: var(--slate);
+  font-weight: 400 !important;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .role-cards {
+    flex-direction: column;
+  }
+
+  .entry-title {
+    font-size: 26px;
+  }
+
+  .role-card {
+    padding: 24px 20px;
+  }
+}
