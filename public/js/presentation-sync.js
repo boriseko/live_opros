@@ -1,10 +1,12 @@
 /**
  * Presentation sync client.
- * Presenter mode: sends slide position to server.
- * Viewer mode: receives position and auto-scrolls.
+ * Presenter mode: sends scroll ratio to server.
+ * Viewer mode: receives ratio and auto-scrolls.
+ *
+ * Uses scroll RATIO (0.0–1.0) instead of stop indices,
+ * so it works smoothly for scroll-swap panels and any position.
  *
  * Requires: ws-client.js (WsClient class) loaded before this script.
- * Requires: navStops[] and navigateTo() from the landing page JS.
  */
 (function () {
   var params = new URLSearchParams(window.location.search);
@@ -15,7 +17,18 @@
   // Connect to presentation WebSocket
   var ws = new WsClient('/ws/presentation?role=' + role);
 
-  // ─── UI: viewer count badge (presenter) / sync indicator (viewer) ───
+  // ─── Helpers ────────────────────────────────────────────
+
+  function getMaxScroll() {
+    return document.documentElement.scrollHeight - window.innerHeight;
+  }
+
+  function getScrollRatio() {
+    var max = getMaxScroll();
+    return max > 0 ? window.scrollY / max : 0;
+  }
+
+  // ─── UI: badge ──────────────────────────────────────────
 
   var badge = document.createElement('div');
   badge.id = 'sync-badge';
@@ -27,7 +40,6 @@
     'transition:opacity 0.3s;pointer-events:auto;';
   document.body.appendChild(badge);
 
-  // Connection status dot
   var dot = document.createElement('span');
   dot.style.cssText =
     'width:8px;height:8px;border-radius:50%;background:#4ecb71;' +
@@ -56,35 +68,44 @@
       badgeText.textContent = n + ' ' + word;
     });
 
-    // Intercept navigateTo: after each navigation, send the stop index
-    var _origNavigateTo = window.navigateTo;
-    if (typeof _origNavigateTo !== 'function') {
-      // navigateTo is inside an IIFE — we need another approach.
-      // Hook into scroll events instead, debounced.
-    }
+    // Send scroll ratio — throttled (every 100ms during active scroll)
+    var lastSentRatio = -1;
+    var scrollThrottleTimer = null;
+    var isScrolling = false;
 
-    // Since navigateTo is inside an IIFE and not global, we track via scroll.
-    // After each scroll settles, find the closest navStop and send it.
-    var lastSentIndex = -1;
-    var scrollTimer = null;
-
-    function sendCurrentStop() {
-      if (typeof navStops === 'undefined' || !navStops.length) return;
-      var cur = Math.round(window.scrollY);
-      var bestIdx = 0, bestDist = Infinity;
-      for (var i = 0; i < navStops.length; i++) {
-        var dist = Math.abs(navStops[i] - cur);
-        if (dist < bestDist) { bestDist = dist; bestIdx = i; }
-      }
-      if (bestIdx !== lastSentIndex) {
-        lastSentIndex = bestIdx;
-        ws.send('slide:sync', { stopIndex: bestIdx });
+    function sendScrollPosition() {
+      var ratio = Math.round(getScrollRatio() * 10000) / 10000; // 4 decimal places
+      if (ratio !== lastSentRatio) {
+        lastSentRatio = ratio;
+        ws.send('slide:sync', { ratio: ratio });
       }
     }
 
     window.addEventListener('scroll', function () {
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(sendCurrentStop, 300);
+      if (!isScrolling) {
+        isScrolling = true;
+        sendScrollPosition(); // Send immediately on scroll start
+      }
+      clearTimeout(scrollThrottleTimer);
+      scrollThrottleTimer = setTimeout(function () {
+        sendScrollPosition(); // Send on scroll end
+        isScrolling = false;
+      }, 150);
+    }, { passive: true });
+
+    // Also send periodically during scroll (throttle)
+    var throttleInterval = null;
+    window.addEventListener('scroll', function () {
+      if (!throttleInterval) {
+        throttleInterval = setInterval(function () {
+          if (!isScrolling) {
+            clearInterval(throttleInterval);
+            throttleInterval = null;
+            return;
+          }
+          sendScrollPosition();
+        }, 100);
+      }
     }, { passive: true });
 
     // Quiz time button
@@ -116,10 +137,6 @@
 
   badgeText.textContent = 'Синхронизация';
 
-  ws.on('viewer:count', function (p) {
-    // Viewer doesn't need to show count
-  });
-
   // Disable keyboard navigation for viewers (presenter controls)
   document.addEventListener('keydown', function (e) {
     var keys = ['PageDown', 'PageUp', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'];
@@ -129,24 +146,31 @@
   }, true); // capture phase — fires before the landing's listener
 
   // Auto-scroll on sync events
-  ws.on('slide:sync', function (p) {
-    var idx = p.stopIndex;
-    if (typeof navStops === 'undefined' || !navStops.length) return;
-    // Clamp to valid range
-    if (idx < 0) idx = 0;
-    if (idx >= navStops.length) idx = navStops.length - 1;
+  var syncScrolling = false;
 
-    // Disable snap during sync scroll
+  ws.on('slide:sync', function (p) {
+    var ratio = p.ratio;
+    if (typeof ratio !== 'number') return;
+
+    var max = getMaxScroll();
+    var targetY = Math.round(ratio * max);
+
+    // Disable snap during sync
     document.documentElement.style.scrollSnapType = 'none';
-    window.scrollTo({ top: navStops[idx], behavior: 'smooth' });
-    setTimeout(function () {
+    syncScrolling = true;
+
+    window.scrollTo({ top: targetY, behavior: 'smooth' });
+
+    // Re-enable snap after scroll settles
+    clearTimeout(syncScrolling._timer);
+    syncScrolling._timer = setTimeout(function () {
       document.documentElement.style.scrollSnapType = '';
-    }, 700);
+      syncScrolling = false;
+    }, 600);
   });
 
   // Quiz time notification
   ws.on('slide:quiztime', function () {
-    // Show overlay notification
     var overlay = document.createElement('div');
     overlay.style.cssText =
       'position:fixed;inset:0;z-index:999999;display:flex;align-items:center;' +
@@ -171,20 +195,15 @@
     overlay.appendChild(card);
     document.body.appendChild(overlay);
 
-    // Close on click outside the card
     overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) {
-        overlay.remove();
-      }
+      if (e.target === overlay) overlay.remove();
     });
 
-    // Auto-close after 30 seconds
     setTimeout(function () {
       if (overlay.parentNode) overlay.remove();
     }, 30000);
   });
 
-  // Add fadeIn keyframes
   var style = document.createElement('style');
   style.textContent = '@keyframes fadeIn{from{opacity:0}to{opacity:1}}';
   document.head.appendChild(style);
