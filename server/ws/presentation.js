@@ -38,11 +38,11 @@ function handlePresentationConnection(ws, query, ctx) {
         const { type, payload } = JSON.parse(raw);
 
         if (type === 'slide:sync') {
-          // Store ratio for late joiners
-          state.slideRatio = payload.ratio;
+          // Store position for late joiners (element-based: {id, offset})
+          state.slidePosition = payload;
           // Broadcast to all participants and displays in this session
-          broadcastToParticipants(sessionId, 'slide:sync', { ratio: payload.ratio });
-          broadcastToDisplays(sessionId, 'slide:sync', { ratio: payload.ratio });
+          broadcastToParticipants(sessionId, 'slide:sync', payload);
+          broadcastToDisplays(sessionId, 'slide:sync', payload);
         }
       } catch (e) {
         // Ignore malformed messages

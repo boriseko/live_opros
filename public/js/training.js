@@ -141,11 +141,16 @@
       document.getElementById('join-subtitle').style.color = 'var(--red)';
     });
 
-    // Slide sync
+    // Slide sync (element-based: {id, offset} or fallback {ratio})
     ws.on('slide:sync', function (data) {
       if (!iframe.contentWindow) return;
       try {
-        iframe.contentWindow.postMessage({ type: 'scroll-sync', ratio: data.ratio }, '*');
+        iframe.contentWindow.postMessage({
+          type: 'scroll-sync',
+          id: data.id,
+          offset: data.offset,
+          ratio: data.ratio
+        }, '*');
       } catch (e) { /* cross-origin or not loaded yet */ }
     });
 

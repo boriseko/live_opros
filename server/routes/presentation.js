@@ -10,23 +10,42 @@ const PRES_DIR = path.join(__dirname, '..', '..', 'data', 'presentations');
 // Ensure directory exists
 if (!fs.existsSync(PRES_DIR)) fs.mkdirSync(PRES_DIR, { recursive: true });
 
-// Viewer script: receives scroll position via postMessage from parent iframe
+// Viewer script: receives element-based scroll sync via postMessage from parent iframe
 const VIEWER_SCRIPT = `
 <script>
-window.addEventListener('message', function(e) {
-  if (e.data && e.data.type === 'scroll-sync') {
-    var max = document.documentElement.scrollHeight - window.innerHeight;
-    if (max > 0) {
-      document.documentElement.style.scrollSnapType = 'none';
-      window.scrollTo({top: e.data.ratio * max, behavior: 'smooth'});
-      setTimeout(function() { document.documentElement.style.scrollSnapType = ''; }, 600);
+(function() {
+  var isMobile = window.innerWidth < 768;
+
+  window.addEventListener('message', function(e) {
+    if (!e.data) return;
+
+    if (e.data.type === 'scroll-sync') {
+      // Element-based sync: find element by ID and scroll to it
+      var el = e.data.id ? document.getElementById(e.data.id) : null;
+      if (el) {
+        var elTop = el.offsetTop;
+        var elHeight = el.offsetHeight;
+        var offset = e.data.offset || 0;
+        var targetY = elTop + offset * elHeight - window.innerHeight * 0.3;
+        document.documentElement.style.scrollSnapType = 'none';
+        window.scrollTo({top: Math.max(0, targetY), behavior: isMobile ? 'auto' : 'smooth'});
+        setTimeout(function() { document.documentElement.style.scrollSnapType = ''; }, isMobile ? 100 : 600);
+      } else if (typeof e.data.ratio === 'number') {
+        // Fallback to ratio if no element ID
+        var max = document.documentElement.scrollHeight - window.innerHeight;
+        if (max > 0) {
+          document.documentElement.style.scrollSnapType = 'none';
+          window.scrollTo({top: e.data.ratio * max, behavior: isMobile ? 'auto' : 'smooth'});
+          setTimeout(function() { document.documentElement.style.scrollSnapType = ''; }, isMobile ? 100 : 600);
+        }
+      }
     }
-  }
-});
+  });
+})();
 </script>
 `;
 
-// Presenter script: sends scroll position via WebSocket
+// Presenter script: detects current element and sends via WebSocket
 function makePresenterScript(sessionId) {
   return `
 <script src="/js/ws-client.js"></script>
@@ -53,25 +72,51 @@ function makePresenterScript(sessionId) {
     text.textContent = n + ' ' + word;
   });
 
-  // Send scroll ratio
-  var lastRatio = -1;
+  // Find nearest element with ID at viewport center
+  function getCurrentElement() {
+    var centerY = window.scrollY + window.innerHeight * 0.4;
+    var candidates = document.querySelectorAll('[id]');
+    var best = null, bestDist = Infinity;
+
+    candidates.forEach(function(el) {
+      if (!el.id || el.offsetHeight < 50) return;
+      var top = el.offsetTop;
+      var height = el.offsetHeight;
+      var elCenter = top + height / 2;
+      var dist = Math.abs(elCenter - centerY);
+      if (dist < bestDist) { bestDist = dist; best = el; }
+    });
+
+    if (best) {
+      var elTop = best.offsetTop;
+      var elHeight = best.offsetHeight;
+      var offset = elHeight > 0 ? Math.max(0, Math.min(1, (centerY - elTop) / elHeight)) : 0;
+      return { id: best.id, offset: Math.round(offset * 1000) / 1000 };
+    }
+    return null;
+  }
+
+  // Send current position
+  var lastId = '';
+  var lastOffset = -1;
   var scrolling = false;
   var timer = null;
 
-  function sendScroll() {
-    var max = document.documentElement.scrollHeight - window.innerHeight;
-    if (max <= 0) return;
-    var ratio = Math.round(window.scrollY / max * 10000) / 10000;
-    if (ratio !== lastRatio) {
-      lastRatio = ratio;
-      ws.send('slide:sync', { ratio: ratio });
+  function sendPosition() {
+    var pos = getCurrentElement();
+    if (!pos) return;
+    // Only send if element changed or offset moved significantly
+    if (pos.id !== lastId || Math.abs(pos.offset - lastOffset) > 0.02) {
+      lastId = pos.id;
+      lastOffset = pos.offset;
+      ws.send('slide:sync', pos);
     }
   }
 
   window.addEventListener('scroll', function() {
-    if (!scrolling) { scrolling = true; sendScroll(); }
+    if (!scrolling) { scrolling = true; sendPosition(); }
     clearTimeout(timer);
-    timer = setTimeout(function() { sendScroll(); scrolling = false; }, 100);
+    timer = setTimeout(function() { sendPosition(); scrolling = false; }, 150);
   }, { passive: true });
 
   // Throttle during active scroll
@@ -80,8 +125,8 @@ function makePresenterScript(sessionId) {
     if (!throttle) {
       throttle = setInterval(function() {
         if (!scrolling) { clearInterval(throttle); throttle = null; return; }
-        sendScroll();
-      }, 100);
+        sendPosition();
+      }, 120);
     }
   }, { passive: true });
 })();
