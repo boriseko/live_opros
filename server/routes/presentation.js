@@ -14,6 +14,18 @@ if (!fs.existsSync(PRES_DIR)) fs.mkdirSync(PRES_DIR, { recursive: true });
 const VIEWER_SCRIPT = `
 <script>
 (function() {
+  // Force desktop viewport on mobile for correct sync
+  if (window.innerWidth < 1024) {
+    var vp = document.querySelector('meta[name="viewport"]');
+    if (vp) vp.setAttribute('content', 'width=1280');
+    else {
+      vp = document.createElement('meta');
+      vp.name = 'viewport';
+      vp.content = 'width=1280';
+      document.head.appendChild(vp);
+    }
+  }
+
   var isMobile = window.innerWidth < 768;
 
   window.addEventListener('message', function(e) {
