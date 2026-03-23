@@ -1,15 +1,13 @@
 /**
  * WebSocket handler for presentation slide synchronization.
- * Session-aware: presenter connects with sessionId, scroll events
- * are broadcast to all participants in that session.
- * Stores current ratio per session for late joiners.
+ * Presenter sends scroll ratio → broadcast to all viewers.
+ * Stores last position for late joiners.
  */
 
 function handlePresentationConnection(ws, query, ctx) {
-  const { activeSessions, getOrCreateSessionState, send,
-          broadcastToParticipants, broadcastToDisplays, sendParticipantCount } = ctx;
+  const { getOrCreateSessionState, send } = ctx;
 
-  const role = query.role || 'presenter';
+  const role = query.role || 'viewer';
   const sessionId = Number(query.sessionId);
 
   ws.isAlive = true;
@@ -25,28 +23,19 @@ function handlePresentationConnection(ws, query, ctx) {
 
   if (role === 'presenter') {
     state.presenterWs = ws;
-
-    // Send current viewer count
-    let online = 0;
-    for (const [, p] of state.participants) {
-      if (p.ws && p.ws.readyState === 1) online++;
-    }
-    send(ws, 'viewer:count', { count: online });
+    send(ws, 'viewer:count', { count: state.presViewers.size });
 
     ws.on('message', (raw) => {
       try {
         const { type, payload } = JSON.parse(raw);
-
         if (type === 'slide:sync') {
-          // Store position for late joiners (element-based: {id, offset})
           state.slidePosition = payload;
-          // Broadcast to all participants and displays in this session
-          broadcastToParticipants(sessionId, 'slide:sync', payload);
-          broadcastToDisplays(sessionId, 'slide:sync', payload);
+          const msg = JSON.stringify({ type: 'slide:sync', payload });
+          for (const v of state.presViewers) {
+            if (v.readyState === 1) v.send(msg);
+          }
         }
-      } catch (e) {
-        // Ignore malformed messages
-      }
+      } catch (e) { /* ignore malformed */ }
     });
 
     ws.on('close', () => {
@@ -54,8 +43,31 @@ function handlePresentationConnection(ws, query, ctx) {
     });
 
   } else {
-    // No viewer role needed — participants connect via /ws/participant
-    ws.close();
+    // Viewer
+    state.presViewers.add(ws);
+
+    // Late joiner: send current position
+    if (state.slidePosition) {
+      send(ws, 'slide:sync', state.slidePosition);
+    }
+
+    // Notify presenter of viewer count
+    sendViewerCount(state);
+
+    ws.on('close', () => {
+      state.presViewers.delete(ws);
+      sendViewerCount(state);
+    });
+  }
+}
+
+function sendViewerCount(state) {
+  if (state.presenterWs && state.presenterWs.readyState === 1) {
+    const msg = JSON.stringify({
+      type: 'viewer:count',
+      payload: { count: state.presViewers.size },
+    });
+    state.presenterWs.send(msg);
   }
 }
 

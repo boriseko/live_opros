@@ -129,9 +129,9 @@
       localStorage.setItem('lo_pid_' + sessionId, participantId);
       localStorage.setItem('lo_name_' + sessionId, name);
 
-      // Load presentation in iframe
+      // Load presentation in iframe (with session for sync)
       if (presentationId) {
-        iframe.src = '/api/presentations/' + presentationId + '/file';
+        iframe.src = '/api/presentations/' + presentationId + '/file?s=' + sessionId;
       }
       hideAllOverlays(); // Hide join screen, show presentation
     });
@@ -139,19 +139,6 @@
     ws.on('error', function (data) {
       document.getElementById('join-subtitle').textContent = data.message || 'Ошибка';
       document.getElementById('join-subtitle').style.color = 'var(--red)';
-    });
-
-    // Slide sync (element-based: {id, offset} or fallback {ratio})
-    ws.on('slide:sync', function (data) {
-      if (!iframe.contentWindow) return;
-      try {
-        iframe.contentWindow.postMessage({
-          type: 'scroll-sync',
-          id: data.id,
-          offset: data.offset,
-          ratio: data.ratio
-        }, '*');
-      } catch (e) { /* cross-origin or not loaded yet */ }
     });
 
     // Question show

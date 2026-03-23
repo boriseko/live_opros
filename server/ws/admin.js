@@ -274,7 +274,13 @@ function handleAdminConnection(ws, query, ctx) {
 
       case 'slide:sync': {
         if (!sessionId) return;
-        broadcastToParticipants(sessionId, 'slide:sync', { ratio: payload.ratio });
+        const syncState = getOrCreateSessionState(sessionId);
+        syncState.slidePosition = { ratio: payload.ratio };
+        // Broadcast to presentation viewers
+        const syncMsg = JSON.stringify({ type: 'slide:sync', payload: { ratio: payload.ratio } });
+        for (const v of syncState.presViewers) {
+          if (v.readyState === 1) v.send(syncMsg);
+        }
         broadcastToDisplays(sessionId, 'slide:sync', { ratio: payload.ratio });
         break;
       }

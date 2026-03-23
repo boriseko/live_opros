@@ -16,6 +16,9 @@ const { handlePresentationConnection } = require('./presentation');
  *   adminWs: WebSocket | null,
  *   displayWs: Set<WebSocket>,
  *   participants: Map<participantId, { ws, name }>,
+ *   presenterWs: WebSocket | null,
+ *   presViewers: Set<WebSocket>,
+ *   slidePosition: { ratio: number } | null,
  *   timerId: NodeJS.Timeout | null,
  *   questionStartedAt: number | null,
  * }
@@ -28,6 +31,9 @@ function getOrCreateSessionState(sessionId) {
       adminWs: null,
       displayWs: new Set(),
       participants: new Map(),
+      presenterWs: null,
+      presViewers: new Set(),
+      slidePosition: null,
       timerId: null,
       questionStartedAt: null,
     });
